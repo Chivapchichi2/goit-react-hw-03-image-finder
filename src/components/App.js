@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import api from '../services/galleryApi';
+import Button from './Button';
 import Container from './Container';
 import ImageGallery from './ImageGallery';
 import Notification from './Notification';
@@ -13,25 +14,30 @@ class App extends Component {
     error: '',
   };
 
-  //  async componentDidMount() {
-  //     // eslint-disable-next-line
-  //     const images = await api.findImage(this.state.query, this.state.page);
-  //     // if (contacts) {
-  //       this.setState({ images });
-  //     // }
-  //   }
-
-  async componentDidUpdate(prevProps, prevState) {
-    const { query, page } = this.state;
+  componentDidUpdate(prevProps, prevState) {
+    const { query } = this.state;
     if (query !== prevState.query) {
-      const images = await api
-        .findImage(query, page)
+      this.fetchImages()
         // eslint-disable-next-line
         .catch(error => this.setState({ error }));
-      // eslint-disable-next-line
-      this.setState({ images });
     }
+    // eslint-disable-next-line
+    window.scrollTo({
+      // eslint-disable-next-line
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
   }
+
+  fetchImages = () => {
+    const { query, page } = this.state;
+    return api.findImage(query, page).then((images) => {
+      this.setState((prevState) => ({
+        images: [...prevState.images, ...images],
+        page: prevState.page + 1,
+      }));
+    });
+  };
 
   handleFormData = ({ query }) => {
     this.setState({
@@ -49,6 +55,7 @@ class App extends Component {
         <Searchbar onSubmit={this.handleFormData} />
         {error && <Notification message={error} />}
         <ImageGallery images={images} />
+        {images[0] && <Button onClick={this.fetchImages} />}
       </Container>
     );
   }
