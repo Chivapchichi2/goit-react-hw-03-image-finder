@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import ImageGalleryItem from './ImageGalleryItem';
 import styles from './ImageGallery.module.css';
 
-const ImageGallery = ({ images }) => (
-  <ul className={styles.ImageGallery}>
+const ImageGallery = ({ images, onClick }) => (
+  // eslint-disable-next-line
+  <ul className={styles.ImageGallery} onClick={onClick}>
     {images.map(({
  id, webformatURL, tags, largeImageURL, 
 }) => (
@@ -20,6 +21,7 @@ const ImageGallery = ({ images }) => (
 
 ImageGallery.propTypes = {
   images: PropTypes.arrayOf(PropTypes.shape).isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default ImageGallery;

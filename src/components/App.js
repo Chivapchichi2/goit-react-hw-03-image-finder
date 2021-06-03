@@ -3,7 +3,8 @@ import api from '../services/galleryApi';
 import Button from './Button';
 import Container from './Container';
 import ImageGallery from './ImageGallery';
-import MyLoader from './Loader';
+import Modal from './Modal';
+import MyLoader from './MyLoader';
 import Notification from './Notification';
 import Searchbar from './Searchbar';
 
@@ -14,6 +15,9 @@ class App extends Component {
     images: [],
     error: '',
     loader: false,
+    showModal: false,
+    url: '',
+    tag: '',
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -31,6 +35,10 @@ class App extends Component {
     });
   }
 
+  componentDidCatch(error) {
+    this.setState({ error });
+  }
+
   fetchImages = () => {
     const { query, page } = this.state;
     this.setState({ loader: true });
@@ -40,6 +48,7 @@ class App extends Component {
         this.setState((prevState) => ({
           images: [...prevState.images, ...images],
           page: prevState.page + 1,
+          error: '',
         }));
       })
       .finally(() => this.setState({ loader: false }));
@@ -54,14 +63,40 @@ class App extends Component {
     });
   };
 
+  handleImageClick = ({ target }) => {
+    if (target.nodeName !== 'IMG') {
+      return;
+    }
+    const { url } = target.dataset;
+    const tag = target.alt;
+    this.setState({
+      url,
+      tag,
+      loader: true,
+    });
+    this.toggleModal();
+  };
+
+  toggleModal = () => this.setState((prevState) => ({ showModal: !prevState.showModal }));
+
+  hideLoaderInModal = () => this.setState({ loader: false });
+
   render() {
-    const { images, error, loader } = this.state;
+    const {
+ images, error, loader, showModal, url, tag, 
+} = this.state;
     return (
       <Container>
+        {showModal && (
+          <Modal onClose={this.toggleModal} onClick={this.handleImageClick}>
+            {loader && <MyLoader />}
+            <img src={url} alt={tag} onLoad={this.hideLoaderInModal} />
+          </Modal>
+        )}
         <Searchbar onSubmit={this.handleFormData} />
-        {error && <Notification message={error} />}
-        <ImageGallery images={images} />
-        {loader && <MyLoader />}
+        {error && <Notification message="Something wrong :(" />}
+        <ImageGallery images={images} onClick={this.handleImageClick} />
+        {loader && !showModal && <MyLoader />}
         {!loader && images[0] && <Button onClick={this.fetchImages} />}
       </Container>
     );
