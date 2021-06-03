@@ -3,6 +3,7 @@ import api from '../services/galleryApi';
 import Button from './Button';
 import Container from './Container';
 import ImageGallery from './ImageGallery';
+import MyLoader from './Loader';
 import Notification from './Notification';
 import Searchbar from './Searchbar';
 
@@ -12,6 +13,7 @@ class App extends Component {
     query: '',
     images: [],
     error: '',
+    loader: false,
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -31,12 +33,16 @@ class App extends Component {
 
   fetchImages = () => {
     const { query, page } = this.state;
-    return api.findImage(query, page).then((images) => {
-      this.setState((prevState) => ({
-        images: [...prevState.images, ...images],
-        page: prevState.page + 1,
-      }));
-    });
+    this.setState({ loader: true });
+    return api
+      .findImage(query, page)
+      .then((images) => {
+        this.setState((prevState) => ({
+          images: [...prevState.images, ...images],
+          page: prevState.page + 1,
+        }));
+      })
+      .finally(() => this.setState({ loader: false }));
   };
 
   handleFormData = ({ query }) => {
@@ -49,13 +55,14 @@ class App extends Component {
   };
 
   render() {
-    const { images, error } = this.state;
+    const { images, error, loader } = this.state;
     return (
       <Container>
         <Searchbar onSubmit={this.handleFormData} />
         {error && <Notification message={error} />}
         <ImageGallery images={images} />
-        {images[0] && <Button onClick={this.fetchImages} />}
+        {loader && <MyLoader />}
+        {!loader && images[0] && <Button onClick={this.fetchImages} />}
       </Container>
     );
   }
