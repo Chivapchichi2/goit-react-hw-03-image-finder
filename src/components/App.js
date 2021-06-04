@@ -27,12 +27,6 @@ class App extends Component {
         // eslint-disable-next-line
         .catch(error => this.setState({ error }));
     }
-    // eslint-disable-next-line
-    window.scrollTo({
-      // eslint-disable-next-line
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    });
   }
 
   componentDidCatch(error) {
@@ -51,6 +45,13 @@ class App extends Component {
           error: '',
         }));
       })
+      .then(() =>
+        // eslint-disable-next-line
+        window.scrollTo({
+          // eslint-disable-next-line
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth',
+        }))
       .finally(() => this.setState({ loader: false }));
   };
 
