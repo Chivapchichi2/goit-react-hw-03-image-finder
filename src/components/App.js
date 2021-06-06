@@ -25,7 +25,8 @@ class App extends Component {
     if (query !== prevState.query) {
       this.fetchImages()
         // eslint-disable-next-line
-        .catch(error => this.setState({ error }));
+        .catch(error => this.setState({ error }))
+        .finally(() => this.setState({ loader: false }));
     }
   }
 
@@ -36,15 +37,17 @@ class App extends Component {
   fetchImages = () => {
     const { query, page } = this.state;
     this.setState({ loader: true });
-    return api
-      .findImage(query, page)
-      .then((images) => {
-        this.setState((prevState) => ({
-          images: [...prevState.images, ...images],
-          page: prevState.page + 1,
-          error: '',
-        }));
-      })
+    return api.findImage(query, page).then((images) => {
+      this.setState((prevState) => ({
+        images: [...prevState.images, ...images],
+        page: prevState.page + 1,
+        error: '',
+      }));
+    });
+  };
+
+  handleOnButtonClick = () => {
+    this.fetchImages()
       .then(() =>
         // eslint-disable-next-line
         window.scrollTo({
@@ -52,6 +55,7 @@ class App extends Component {
           top: document.documentElement.scrollHeight,
           behavior: 'smooth',
         }))
+      .catch((error) => this.setState({ error }))
       .finally(() => this.setState({ loader: false }));
   };
 
@@ -98,7 +102,7 @@ class App extends Component {
         {error && <Notification message="Something wrong :(" />}
         <ImageGallery images={images} onClick={this.handleImageClick} />
         {loader && !showModal && <MyLoader />}
-        {!loader && images[0] && <Button onClick={this.fetchImages} />}
+        {!loader && images[0] && <Button onClick={this.handleOnButtonClick} />}
       </Container>
     );
   }
